@@ -1,145 +1,3 @@
-### accounts/README.md
-
-# Accounts App
-
-This Django app handles user authentication for the E-commerce Analysis project.
-
-## Features
-
-- User signup
-- User login
-- JWT token generation and refresh
-
-## API Endpoints
-
-- `/signup/`: POST request to create a new user account
-- `/login/`: POST request to log in and obtain JWT tokens
-- `/token/`: POST request to obtain a new pair of JWT tokens
-- `/token/refresh/`: POST request to refresh an existing JWT token
-
-## Usage
-
-### Signup
-
-```
-POST /accounts/signup/
-{
-  "username": "your_username",
-  "password": "your_password"
-}
-```
-
-### Login
-
-```
-POST /accounts/login/
-{
-  "username": "your_username",
-  "password": "your_password"
-}
-```
-
-### Obtain new token pair
-
-```
-POST /accounts/token/
-{
-  "username": "your_username",
-  "password": "your_password"
-}
-```
-
-### Refresh token
-
-```
-POST /accounts/token/refresh/
-{
-  "refresh": "your_refresh_token"
-}
-```
-
-## Authentication
-
-This app uses JWT (JSON Web Tokens) for authentication. After logging in or signing up, you will receive an access token and a refresh token. Include the access token in the Authorization header of your requests:
-
-```
-Authorization: Bearer <your_access_token>
-```
-
-When the access token expires, use the refresh token to obtain a new pair of tokens.
-
-# Products App
-
-This Django app manages product data and analysis for the E-commerce Analysis project.
-
-## Features
-
-- CSV file upload for product data
-- Data cleaning and preprocessing
-- Summary report generation
-
-## Models
-
-### Product
-
-- `product_id`: CharField
-- `product_name`: CharField
-- `category`: CharField
-- `price`: DecimalField
-- `quantity_sold`: IntegerField
-- `rating`: FloatField
-- `review_count`: IntegerField
-
-## API Endpoints
-
-- `/upload-data/`: POST request to upload CSV file (requires authentication)
-- `/clean-data/`: POST request to clean and preprocess data (requires authentication)
-- `/summary-report/`: GET request to generate and download the summary report (requires authentication)
-
-## Usage
-
-### Upload Data
-
-```
-POST /products/upload-data/
-Headers: Authorization: Bearer <access_token>
-Body: Form-data with key 'file' and value as the CSV file
-```
-
-### Clean Data
-
-```
-POST /products/clean-data/
-Headers: Authorization: Bearer <access_token>
-```
-
-### Generate Summary Report
-
-```
-GET /products/summary-report/
-Headers: Authorization: Bearer <access_token>
-```
-
-## Data Format
-
-The CSV file for data upload should contain the following columns:
-- product_id
-- product_name
-- category
-- price
-- quantity_sold
-- rating
-- review_count
-
-## Summary Report
-
-The generated summary report will be a CSV file containing:
-- category
-- total_revenue
-- top_product (the product name of the highest selling product in that category)
-- top_product_quantity_sold
-
-
 # E-commerce Analysis Django Application
 
 This Django application provides an API for uploading, cleaning, and analyzing e-commerce product data. It includes user authentication, data management, and report generation features.
@@ -248,6 +106,45 @@ For detailed information about each app, please refer to their respective README
    ```
 
 2. Use the API endpoints as described in the app-specific README files.
+
+## SQL Assignment
+
+As part of this project, we have a SQL assignment to analyze customer spending patterns. Here's the task:
+
+Write a SQL query to find the top 5 customers who have spent the most money on the platform. The output should include the following columns: customer_id, customer_name, email, total_spent, and most_purchased_category (the category of products they spent the most money on).
+
+Here's a sample solution:
+
+```sql
+SELECT 
+    c.customer_id,
+    c.customer_name,
+    c.email,
+    SUM(oi.quantity * oi.price_per_unit) AS total_spent,
+    MAX(p.category) AS most_purchased_category
+FROM 
+    Customers c
+JOIN 
+    Orders o ON c.customer_id = o.customer_id
+JOIN 
+    Order_Items oi ON o.order_id = oi.order_id
+JOIN 
+    Products p ON oi.product_id = p.product_id
+WHERE 
+    o.order_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+GROUP BY 
+    c.customer_id, c.customer_name, c.email
+ORDER BY 
+    total_spent DESC
+LIMIT 5;
+```
+
+This query assumes the following:
+- We have tables named Customers, Orders, Order_Items, and Products.
+- We're considering orders from the last year only.
+- The most_purchased_category is determined by the category with the highest total spend.
+
+Note: Depending on your specific database schema, you might need to adjust the table and column names accordingly.
 
 ## Security Considerations
 
